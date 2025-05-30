@@ -1,34 +1,43 @@
-name: Java CI with Maven
+name: 构建镜像并推送docker hub
 
-# 当以下事件发生时触发此工作流
 on:
   push:
-    branches: [ "main" ] # 当代码推送到 main 分支时触发
-  pull_request:
-    branches: [ "main" ] # 当向 main 分支创建拉取请求时触发
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
 
 jobs:
-  build:
-    runs-on: ubuntu-latest # 在最新的 Ubuntu 运行器上执行此作业
+  build-and-push-docker-image:
+    name: 镜像构建工作流
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code # 步骤1: 检出仓库代码
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21 # 步骤2: 设置 Java Development Kit (JDK) 版本
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'        # 指定使用 Java 21
-          distribution: 'temurin'   # 推荐使用 Eclipse Temurin 发行版
-          cache: 'maven'            # 启用 Maven 依赖缓存，以加快后续构建速度
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven' # 启用 Maven 依赖缓存
 
-      - name: Build with Maven # 步骤3: 使用 Maven 构建项目
-        run: mvn -B package --file pom.xml # -B 表示批处理模式，--file 指定 pom 文件
+      - name: Build with Maven # 构建项目生成 JAR 包
+        run: mvn -B package --file pom.xml
 
-      - name: Upload a Build Artifact # 步骤4: 将构建生成的 JAR 包作为工作流产物上传
-        uses: actions/upload-artifact@v4
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
         with:
-          name: exampletelegrambot-jar # 产物的名称，你可以下载这个文件
-          path: target/*.jar           # 指定需要上传的文件路径。请确保这个路径与你的实际 JAR 包路径相符。
-          # 通常 Spring Boot 会生成类似 target/exampletelegrambot-0.0.1-SNAPSHOT.jar 的文件
-          # 如果你的 JAR 文件名有变化，可能需要调整为精确的路径，例如: target/exampletelegrambot-${{ github.sha }}.jar
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: unitserow/example-telegrambot:latest
+          file: ./Dockerfile
