@@ -2,7 +2,12 @@ package com.example.telegram.bot;
 
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +42,7 @@ public class KeyboardService {
 
     /**
      * 根据页码创建对应的内联键盘。
+     *
      * @param pageNum 当前页码。
      * @return 对应页面的 InlineKeyboardMarkup。
      */
@@ -79,5 +85,35 @@ public class KeyboardService {
 
         markupInline.setKeyboard(keyboardRows);
         return markupInline;
+    }
+
+    /**
+     * 创建输入框下方的回复键盘。
+     *
+     * @return ReplyKeyboardMarkup
+     */
+    public ReplyKeyboardMarkup createReplyKeyboard() {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setResizeKeyboard(true); // 适应键盘大小
+        replyKeyboardMarkup.setOneTimeKeyboard(false); // 保持键盘常驻，除非隐藏
+        replyKeyboardMarkup.setSelective(false); // 对所有用户可见
+
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        // 第一行按钮
+        KeyboardRow row1 = new KeyboardRow();
+        row1.add(new KeyboardButton("🏠 首页")); // 文本内容将作为消息发送给机器人
+        row1.add(new KeyboardButton("📦 我的订单"));
+        row1.add(new KeyboardButton("💰 邀请返利"));
+        keyboard.add(row1);
+
+        // 如果需要，可以添加更多行
+        // KeyboardRow row2 = new KeyboardRow();
+        // row2.add(new KeyboardButton("其他功能"));
+        // keyboard.add(row2);
+
+        replyKeyboardMarkup.setKeyboard(keyboard);
+        return replyKeyboardMarkup;
+
     }
 }
